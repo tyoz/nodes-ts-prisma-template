@@ -1,0 +1,722 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model app {
+  id          Int           @id(map: "app_core_app_pkey") @default(autoincrement())
+  nome        String        @db.VarChar(100)
+  descricao   String        @db.VarChar(100)
+  usuario_app usuario_app[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model app_core_log {
+  id                                                      Int                 @id @default(autoincrement())
+  mensagem                                                String              @db.VarChar(1024)
+  created_at                                              DateTime            @db.Timestamptz(6)
+  updated_at                                              DateTime?           @db.Timestamptz(6)
+  deleted_at                                              DateTime?           @db.Timestamptz(6)
+  categoria_log                                           Int
+  usuario_id                                              Int
+  usuario_organizacao_id                                  Int
+  categoria_log_app_core_log_categoria_logTocategoria_log categoria_log       @relation("app_core_log_categoria_logTocategoria_log", fields: [categoria_log], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_log_categoria_log_ac14c1f2_fk_app_core_logcategory_id")
+  auth_user                                               auth_user           @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_log_usuario_id_0365d6b9_fk_auth_user_id")
+  organizacao_usuario                                     organizacao_usuario @relation(fields: [usuario_organizacao_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_log_usuario_organizacao__46c2ed34_fk_app_core_")
+
+  @@index([categoria_log], map: "app_core_log_log_category_id_f1b3a7fd")
+  @@index([usuario_id], map: "app_core_log_user_id_3c376173")
+  @@index([usuario_organizacao_id], map: "app_core_log_user_organization_id_864c7c10")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model app_core_status {
+  id                  Int              @id @default(autoincrement())
+  nome                String           @db.VarChar(100)
+  descricao           String           @db.VarChar(100)
+  categoria_status_id Int
+  categoria_status    categoria_status @relation(fields: [categoria_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_status_categoria_status_id_1920b3cb_fk_app_core_")
+  tarefa              tarefa[]
+
+  @@index([categoria_status_id], map: "app_core_status_status_category_id_a5535767")
+}
+
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique @db.VarChar(150)
+  auth_group_permissions auth_group_permissions[]
+  auth_user_groups       auth_user_groups[]
+
+  @@index([name], map: "auth_group_name_a6ea08ec_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_group_permissions {
+  id              BigInt          @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm")
+  auth_group      auth_group      @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissions_group_id_b120cbf9_fk_auth_group_id")
+
+  @@unique([group_id, permission_id], map: "auth_group_permissions_group_id_permission_id_0cd325b0_uniq")
+  @@index([group_id], map: "auth_group_permissions_group_id_b120cbf9")
+  @@index([permission_id], map: "auth_group_permissions_permission_id_84c5c92e")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_permission {
+  id                         Int                          @id @default(autoincrement())
+  name                       String                       @db.VarChar(255)
+  content_type_id            Int
+  codename                   String                       @db.VarChar(100)
+  auth_group_permissions     auth_group_permissions[]
+  django_content_type        django_content_type          @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_permission_content_type_id_2f476e4b_fk_django_co")
+  auth_user_user_permissions auth_user_user_permissions[]
+
+  @@unique([content_type_id, codename], map: "auth_permission_content_type_id_codename_01ab375a_uniq")
+  @@index([content_type_id], map: "auth_permission_content_type_id_2f476e4b")
+}
+
+model auth_user {
+  id                                                      Int                          @id @default(autoincrement())
+  password                                                String                       @db.VarChar(128)
+  last_login                                              DateTime?                    @db.Timestamptz(6)
+  is_superuser                                            Boolean
+  username                                                String                       @unique @db.VarChar(150)
+  first_name                                              String                       @db.VarChar(150)
+  last_name                                               String                       @db.VarChar(150)
+  email                                                   String                       @db.VarChar(254)
+  is_staff                                                Boolean
+  is_active                                               Boolean
+  date_joined                                             DateTime                     @db.Timestamptz(6)
+  app_core_log                                            app_core_log[]
+  auth_user_groups                                        auth_user_groups[]
+  auth_user_user_permissions                              auth_user_user_permissions[]
+  detalhes_usuario_detalhes_usuario_user_id_idToauth_user detalhes_usuario?            @relation("detalhes_usuario_user_id_idToauth_user")
+  detalhes_usuario_detalhes_usuario_paiToauth_user        detalhes_usuario[]           @relation("detalhes_usuario_paiToauth_user")
+  django_admin_log                                        django_admin_log[]
+  enriquecimento_em_lote                                  enriquecimento_em_lote[]
+  mailing                                                 mailing[]
+  organizacao_usuario                                     organizacao_usuario[]
+  transacao                                               transacao[]
+  usuario_app_usuario_app_alterado_porToauth_user         usuario_app[]                @relation("usuario_app_alterado_porToauth_user")
+  usuario_app_usuario_app_usuario_idToauth_user           usuario_app[]                @relation("usuario_app_usuario_idToauth_user")
+  usuario_licenca                                         usuario_licenca[]
+
+  @@index([username], map: "auth_user_username_6821ab7c_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_user_groups {
+  id         BigInt     @id @default(autoincrement())
+  user_id    Int
+  group_id   Int
+  auth_group auth_group @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_groups_group_id_97559544_fk_auth_group_id")
+  auth_user  auth_user  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_groups_user_id_6a12ed8b_fk_auth_user_id")
+
+  @@unique([user_id, group_id], map: "auth_user_groups_user_id_group_id_94350c0c_uniq")
+  @@index([group_id], map: "auth_user_groups_group_id_97559544")
+  @@index([user_id], map: "auth_user_groups_user_id_6a12ed8b")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_user_user_permissions {
+  id              BigInt          @id @default(autoincrement())
+  user_id         Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm")
+  auth_user       auth_user       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id")
+
+  @@unique([user_id, permission_id], map: "auth_user_user_permissions_user_id_permission_id_14a6b632_uniq")
+  @@index([permission_id], map: "auth_user_user_permissions_permission_id_1fbb5f2c")
+  @@index([user_id], map: "auth_user_user_permissions_user_id_a95ead1b")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model bairro {
+  id        Int        @id(map: "app_core_neighborhood_pkey") @default(autoincrement())
+  nome      String     @db.VarChar(100)
+  cidade_id Int
+  cidade    cidade     @relation(fields: [cidade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "bairro_cidade_id_26903fb0_fk_cidade_id")
+  endereco  endereco[]
+
+  @@index([cidade_id], map: "app_core_neighborhood_city_id_c4502301")
+}
+
+model banco {
+  id                  Int                   @id(map: "app_core_bank_pkey") @default(autoincrement())
+  codigo              Int
+  nome                String                @db.VarChar(250)
+  created_at          DateTime              @db.Timestamptz(6)
+  updated_at          DateTime?             @db.Timestamptz(6)
+  deleted_at          DateTime?             @db.Timestamptz(6)
+  conta_bancaria      conta_bancaria[]
+  contrato            contrato[]
+  emprestimo_rcc_inss emprestimo_rcc_inss[]
+  emprestimo_rmc_inss emprestimo_rmc_inss[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model beneficio {
+  id                                Int                   @id(map: "app_core_benefit_pkey") @default(autoincrement())
+  codigo_agencia_previdencia_social String?               @db.VarChar(100)
+  nb                                String                @db.VarChar(100)
+  nit                               String?               @db.VarChar(100)
+  situacao                          String?               @db.VarChar(100)
+  data_despacho_beneficio           DateTime?             @db.Date
+  data_inicio_beneficio             DateTime?             @db.Date
+  pensao_alimenticia                Boolean?
+  bloqueado_para_emprestimo         String                @db.VarChar(100)
+  elegivel_para_emprestimo          String                @db.VarChar(100)
+  representante_legal_id            Int?
+  created_at                        DateTime              @db.Timestamptz(6)
+  updated_at                        DateTime?             @db.Timestamptz(6)
+  deleted_at                        DateTime?             @db.Timestamptz(6)
+  especie_id                        Int
+  valor                             Float?
+  metodo_de_pagamento               String                @db.VarChar(100)
+  especie                           especie               @relation(fields: [especie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_benefit_especie_id_af793b2d_fk_especie_id")
+  representante_legal               representante_legal?  @relation(fields: [representante_legal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "beneficio_representante_legal__d934df79_fk_represent")
+  beneficio_historico               beneficio_historico[]
+  cliente_beneficio                 cliente_beneficio[]
+  conta_bancaria                    conta_bancaria[]
+  contrato                          contrato[]
+  emprestimo_rcc_inss               emprestimo_rcc_inss[]
+  emprestimo_rmc_inss               emprestimo_rmc_inss[]
+  margem                            margem[]
+
+  @@index([especie_id], map: "app_core_benefit_especie_id_af793b2d")
+  @@index([representante_legal_id], map: "app_core_benefit_legal_representative_id_8294d279")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model beneficio_historico {
+  id            Int       @id(map: "app_core_benefithistory_pkey") @default(autoincrement())
+  data_registro DateTime? @db.Timestamptz(6)
+  created_at    DateTime  @db.Timestamptz(6)
+  updated_at    DateTime? @db.Timestamptz(6)
+  deleted_at    DateTime? @db.Timestamptz(6)
+  beneficio_id  Int
+  beneficio     beneficio @relation(fields: [beneficio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_benefithist_beneficio_id_30e36b8d_fk_app_core_")
+
+  @@index([beneficio_id], map: "app_core_benefithistory_benefit_id_129c7613")
+}
+
+model categoria_log {
+  id                                                     Int            @id(map: "app_core_logcategory_pkey") @default(autoincrement())
+  nome                                                   String         @db.VarChar(100)
+  descricao                                              String         @db.VarChar(100)
+  created_at                                             DateTime       @db.Timestamptz(6)
+  deleted_at                                             DateTime?      @db.Timestamptz(6)
+  updated_at                                             DateTime?      @db.Timestamptz(6)
+  app_core_log_app_core_log_categoria_logTocategoria_log app_core_log[] @relation("app_core_log_categoria_logTocategoria_log")
+}
+
+model categoria_status {
+  id              Int               @id(map: "app_core_statuscategory_pkey") @default(autoincrement())
+  nome            String            @db.VarChar(100)
+  descricao       String            @db.VarChar(100)
+  app_core_status app_core_status[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model cep {
+  id        Int        @id(map: "app_core_postalcode_pkey") @default(autoincrement())
+  cidade_id Int
+  codigo    String     @db.VarChar(100)
+  cidade    cidade     @relation(fields: [cidade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cep_cidade_id_c0137c64_fk_cidade_id")
+  endereco  endereco[]
+
+  @@index([cidade_id], map: "app_core_postalcode_city_id_68761a81")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model cidade {
+  id         Int        @id(map: "app_core_city_pkey") @default(autoincrement())
+  nome       String     @db.VarChar(100)
+  created_at DateTime   @db.Timestamptz(6)
+  updated_at DateTime?  @db.Timestamptz(6)
+  deleted_at DateTime?  @db.Timestamptz(6)
+  estado_id  Int?
+  bairro     bairro[]
+  cep        cep[]
+  estado     estado?    @relation(fields: [estado_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cidade_estado_id_f67dc05f_fk_estado_id")
+  endereco   endereco[]
+
+  @@index([estado_id], map: "app_core_city_state_id_1d72500b")
+}
+
+model cliente {
+  id                Int                 @id(map: "app_core_client_pkey") @default(autoincrement())
+  cpf               String              @unique(map: "app_core_client_cpf_key") @db.VarChar(100)
+  rg                String?             @db.VarChar(100)
+  nome              String              @db.VarChar(100)
+  sexo              String?             @db.VarChar(100)
+  data_nascimento   DateTime?           @db.Date
+  nome_mae          String?             @db.VarChar(100)
+  created_at        DateTime            @db.Timestamptz(6)
+  updated_at        DateTime?           @db.Timestamptz(6)
+  deleted_at        DateTime?           @db.Timestamptz(6)
+  nao_perturbe      Boolean?
+  cliente_beneficio cliente_beneficio[]
+  endereco          endereco[]
+  tarefa            tarefa[]
+  telefone          telefone[]
+
+  @@index([cpf], map: "app_core_client_cpf_69f1923d_like")
+  @@index([rg], map: "app_core_client_rg_38bcd899_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model cliente_beneficio {
+  id           Int       @id(map: "app_core_clientbenefit_pkey") @default(autoincrement())
+  nome         String    @db.VarChar(100)
+  created_at   DateTime  @db.Timestamptz(6)
+  updated_at   DateTime? @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+  beneficio_id Int
+  cliente_id   Int
+  beneficio    beneficio @relation(fields: [beneficio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_clientbenef_beneficio_id_df4147e2_fk_app_core_")
+  cliente      cliente   @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_clientbenef_cliente_id_f22b161e_fk_app_core_")
+
+  @@index([beneficio_id], map: "app_core_clientbenefit_benefit_id_bdcda66d")
+  @@index([cliente_id], map: "app_core_clientbenefit_client_id_9cecd47c")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model conta_bancaria {
+  id           Int       @id(map: "app_core_bankaccount_pkey") @default(autoincrement())
+  agencia      String    @db.VarChar(100)
+  tipo         String    @db.VarChar(100)
+  conta        String    @db.VarChar(100)
+  created_at   DateTime  @db.Timestamptz(6)
+  updated_at   DateTime? @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+  banco_id     Int
+  beneficio_id Int
+  banco        banco     @relation(fields: [banco_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_bankaccount_banco_id_3dec6596_fk_app_core_bank_id")
+  beneficio    beneficio @relation(fields: [beneficio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_bankaccount_beneficio_id_982eef5b_fk_app_core_")
+
+  @@index([banco_id], map: "app_core_bankaccount_bank_id_a15e2a14")
+  @@index([beneficio_id], map: "app_core_bankaccount_benefit_id_7a9d6dcb")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model contrato {
+  id                 Int       @id(map: "app_core_contract_pkey") @default(autoincrement())
+  numero             String    @db.VarChar(100)
+  primeira_parcela   DateTime? @db.Timestamptz(6)
+  ultima_parcela     DateTime? @db.Timestamptz(6)
+  data_registro      DateTime? @db.Timestamptz(6)
+  parcela_atual      Int?
+  total_de_parcelas  Int?
+  valor_parcela      Float?
+  valor_emprestado   Float?
+  taxa               Float?
+  saldo_devedor      Float?
+  status             String    @db.VarChar(100)
+  created_at         DateTime  @db.Timestamptz(6)
+  updated_at         DateTime? @db.Timestamptz(6)
+  deleted_at         DateTime? @db.Timestamptz(6)
+  banco_id           Int
+  beneficio_id       Int
+  parcelas_pagas     Int?
+  parcelas_restantes Int?
+  especie_id         Int
+  banco              banco     @relation(fields: [banco_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contrato_banco_id_44008022_fk_banco_id")
+  beneficio          beneficio @relation(fields: [beneficio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contrato_beneficio_id_6453d988_fk_beneficio_id")
+  especie            especie   @relation(fields: [especie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contrato_especie_id_992772a6_fk_especie_id")
+
+  @@index([banco_id], map: "app_core_contract_bank_id_9fbcebe5")
+  @@index([beneficio_id], map: "app_core_contract_benefit_id_22f08fec")
+  @@index([especie_id], map: "contrato_especie_9f6e3164")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model detalhes_usuario {
+  user_id_id                                       Int        @id(map: "app_core_userdetails_pkey")
+  cpf                                              String     @db.VarChar(100)
+  telephone                                        String     @db.VarChar(100)
+  bloqueado                                        Boolean
+  pai                                              Int?
+  created_at                                       DateTime   @db.Timestamptz(6)
+  deleted_at                                       DateTime?  @db.Timestamptz(6)
+  updated_at                                       DateTime?  @db.Timestamptz(6)
+  auth_user_detalhes_usuario_user_id_idToauth_user auth_user  @relation("detalhes_usuario_user_id_idToauth_user", fields: [user_id_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_userdetails_user_id_id_aadf7a63_fk_auth_user_id")
+  auth_user_detalhes_usuario_paiToauth_user        auth_user? @relation("detalhes_usuario_paiToauth_user", fields: [pai], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "detalhes_usuario_pai_28856b57_fk_auth_user_id")
+
+  @@index([pai], map: "app_core_userdetails_father_id_ce30720d")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model django_admin_log {
+  id                  Int                  @id @default(autoincrement())
+  action_time         DateTime             @db.Timestamptz(6)
+  object_id           String?
+  object_repr         String               @db.VarChar(200)
+  action_flag         Int                  @db.SmallInt
+  change_message      String
+  content_type_id     Int?
+  user_id             Int
+  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_content_type_id_c4bce8eb_fk_django_co")
+  auth_user           auth_user            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_user_id_c564eba6_fk_auth_user_id")
+
+  @@index([content_type_id], map: "django_admin_log_content_type_id_c4bce8eb")
+  @@index([user_id], map: "django_admin_log_user_id_c564eba6")
+}
+
+model django_content_type {
+  id               Int                @id @default(autoincrement())
+  app_label        String             @db.VarChar(100)
+  model            String             @db.VarChar(100)
+  auth_permission  auth_permission[]
+  django_admin_log django_admin_log[]
+
+  @@unique([app_label, model], map: "django_content_type_app_label_model_76bd3d3b_uniq")
+}
+
+model django_migrations {
+  id      BigInt   @id @default(autoincrement())
+  app     String   @db.VarChar(255)
+  name    String   @db.VarChar(255)
+  applied DateTime @db.Timestamptz(6)
+}
+
+model django_session {
+  session_key  String   @id @db.VarChar(40)
+  session_data String
+  expire_date  DateTime @db.Timestamptz(6)
+
+  @@index([expire_date], map: "django_session_expire_date_a5c62663")
+  @@index([session_key], map: "django_session_session_key_c0390e0f_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model emprestimo_rcc_inss {
+  id              Int       @id @default(autoincrement())
+  numero_contrato String    @db.VarChar(100)
+  created_at      DateTime  @db.Timestamptz(6)
+  updated_at      DateTime? @db.Timestamptz(6)
+  deleted_at      DateTime? @db.Timestamptz(6)
+  banco_id        Int
+  especie_id      Int
+  limite          Decimal   @db.Decimal(20, 2)
+  valor_reservado Decimal   @db.Decimal(20, 2)
+  beneficio_id    Int
+  banco           banco     @relation(fields: [banco_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emprestimo_rcc_inss_banco_id_04c8d179_fk_banco_id")
+  beneficio       beneficio @relation(fields: [beneficio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emprestimo_rcc_inss_beneficio_id_91863106_fk_beneficio_id")
+  especie         especie   @relation(fields: [especie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emprestimo_rcc_inss_especie_id_cf123156_fk_especie_id")
+
+  @@index([beneficio_id], map: "emprestimo_rcc_inss_beneficio_e34b07bc")
+  @@index([banco_id], map: "emprestimo_rcc_inss_codigo_banco_21b780c8")
+  @@index([especie_id], map: "emprestimo_rcc_inss_especie_61f272cc")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model emprestimo_rmc_inss {
+  id              Int       @id @default(autoincrement())
+  numero_contrato String    @db.VarChar(100)
+  created_at      DateTime  @db.Timestamptz(6)
+  updated_at      DateTime? @db.Timestamptz(6)
+  deleted_at      DateTime? @db.Timestamptz(6)
+  banco_id        Int
+  especie_id      Int
+  limite          Decimal   @db.Decimal(20, 2)
+  valor_reservado Decimal   @db.Decimal(20, 2)
+  beneficio_id    Int
+  banco           banco     @relation(fields: [banco_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emprestimo_rmc_inss_banco_id_485a0c64_fk_banco_id")
+  beneficio       beneficio @relation(fields: [beneficio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emprestimo_rmc_inss_beneficio_id_6046f7a8_fk_beneficio_id")
+  especie         especie   @relation(fields: [especie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emprestimo_rmc_inss_especie_id_27159c77_fk_especie_id")
+
+  @@index([beneficio_id], map: "emprestimo_rmc_inss_beneficio_id_6046f7a8")
+  @@index([banco_id], map: "emprestimo_rmc_inss_codigo_banco_14befc10")
+  @@index([especie_id], map: "emprestimo_rmc_inss_especie_62cc17a9")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model endereco {
+  id         Int       @id(map: "app_core_address_pkey") @default(autoincrement())
+  nome       String    @db.VarChar(100)
+  created_at DateTime  @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  cidade_id  Int
+  cep_id     Int
+  estado_id  Int
+  bairro_id  Int
+  cliente_id Int
+  bairro     bairro    @relation(fields: [bairro_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "endereco_bairro_id_de9cc896_fk_bairro_id")
+  cep        cep       @relation(fields: [cep_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "endereco_cep_id_27bafd6b_fk_cep_id")
+  cidade     cidade    @relation(fields: [cidade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "endereco_cidade_id_ac9e5845_fk_cidade_id")
+  cliente    cliente   @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "endereco_cliente_id_a9b64af4_fk_cliente_id")
+  estado     estado    @relation(fields: [estado_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "endereco_estado_id_de0af8f5_fk_estado_id")
+
+  @@index([cidade_id], map: "app_core_address_city_id_c36c0da0")
+  @@index([bairro_id], map: "app_core_address_neighborhood_id_58787881")
+  @@index([cep_id], map: "app_core_address_postal_code_id_a51111d0")
+  @@index([estado_id], map: "app_core_address_state_id_a0a0755a")
+  @@index([cliente_id], map: "endereco_cliente_id_a9b64af4")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model enriquecimento_em_lote {
+  id                             Int       @id(map: "app_core_batch_pkey") @default(autoincrement())
+  nome_arquivo                   String    @db.VarChar(100)
+  registros_totais               Int?
+  created_at                     DateTime  @db.Timestamptz(6)
+  updated_at                     DateTime? @db.Timestamptz(6)
+  deleted_at                     DateTime? @db.Timestamptz(6)
+  usuario_id                     Int
+  registros_processados          Int?
+  registros_encontrados          Int?
+  tipo_consulta                  Boolean
+  nome_do_arquivo_de_sanitizacao String?   @db.VarChar(100)
+  auth_user                      auth_user @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_batch_usuario_id_a07d4816_fk_auth_user_id")
+
+  @@index([usuario_id], map: "app_core_batch_user_id_id_7ede9e69")
+}
+
+model especie {
+  id                  Int                   @id @default(autoincrement())
+  nome                String                @db.VarChar(100)
+  codigo              String                @db.VarChar(4)
+  beneficio           beneficio[]
+  contrato            contrato[]
+  emprestimo_rcc_inss emprestimo_rcc_inss[]
+  emprestimo_rmc_inss emprestimo_rmc_inss[]
+}
+
+model estado {
+  id         Int        @id(map: "app_core_state_pkey") @default(autoincrement())
+  nome       String     @unique(map: "app_core_state_name_6ec798e1_uniq") @db.VarChar(100)
+  created_at DateTime   @db.Timestamptz(6)
+  updated_at DateTime?  @db.Timestamptz(6)
+  deleted_at DateTime?  @db.Timestamptz(6)
+  cidade     cidade[]
+  endereco   endereco[]
+
+  @@index([nome], map: "app_core_state_name_6ec798e1_like")
+}
+
+model grupo_consulta {
+  id                     Int                      @id(map: "app_core_group_pkey") @default(autoincrement())
+  name                   String                   @db.VarChar(100)
+  usuario_id             String                   @db.VarChar(100)
+  created_at             DateTime                 @db.Timestamptz(6)
+  updated_at             DateTime?                @db.Timestamptz(6)
+  deleted_at             DateTime?                @db.Timestamptz(6)
+  grupo_servico_consulta grupo_servico_consulta[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model grupo_servico_consulta {
+  id               Int              @id(map: "app_core_servicegroup_pkey") @default(autoincrement())
+  priority         Int?
+  created_at       DateTime         @db.Timestamptz(6)
+  updated_at       DateTime?        @db.Timestamptz(6)
+  deleted_at       DateTime?        @db.Timestamptz(6)
+  grupo_id         Int
+  servico_id       Int
+  servico_consulta servico_consulta @relation(fields: [servico_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "grupo_servico_consul_servico_id_7f8ad865_fk_servico_c")
+  grupo_consulta   grupo_consulta   @relation(fields: [grupo_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "grupo_servico_consulta_grupo_id_3ce92789_fk_grupo_consulta_id")
+
+  @@index([grupo_id], map: "app_core_servicegroup_group_id_c59498ef")
+  @@index([servico_id], map: "app_core_servicegroup_service_id_ab6fa8e7")
+}
+
+model licenca {
+  id              Int               @id(map: "app_core_license_pkey") @default(autoincrement())
+  nome            String            @db.VarChar(100)
+  descricao       String            @db.VarChar(100)
+  dias_validos    Int?
+  usuario_licenca usuario_licenca[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model mailing {
+  id                         Int       @id(map: "app_core_mailing_pkey") @default(autoincrement())
+  nome                       String    @db.VarChar(100)
+  maximo_registros_esperados Int?
+  status                     String    @db.VarChar(100)
+  registros_encontrados      Int?
+  registros_processados      Int?
+  created_at                 DateTime  @db.Timestamptz(6)
+  updated_at                 DateTime? @db.Timestamptz(6)
+  deleted_at                 DateTime? @db.Timestamptz(6)
+  usuario_id                 Int
+  auth_user                  auth_user @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_mailing_usuario_id_3813f164_fk_auth_user_id")
+
+  @@index([usuario_id], map: "app_core_mailing_user_id_651750a1")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model margem {
+  id                           Int       @id(map: "app_core_margin_pkey") @default(autoincrement())
+  competencia                  DateTime? @db.Date
+  consignado_total_consignavel Decimal   @db.Decimal(20, 2)
+  margem_emprestimo            Decimal   @db.Decimal(20, 2)
+  margem_rcc                   Decimal   @db.Decimal(20, 2)
+  created_at                   DateTime  @db.Timestamptz(6)
+  updated_at                   DateTime? @db.Timestamptz(6)
+  deleted_at                   DateTime? @db.Timestamptz(6)
+  beneficio_id                 Int
+  margem_rmc                   Decimal   @db.Decimal(20, 2)
+  cartao_total_consignavel     Decimal   @db.Decimal(20, 2)
+  beneficio                    beneficio @relation(fields: [beneficio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_margin_beneficio_id_d26cb5ea_fk_app_core_benefit_id")
+
+  @@index([beneficio_id], map: "app_core_margin_benefit_id_aad542b4")
+}
+
+model organizacao {
+  id                  Int                   @id(map: "app_core_organization_pkey") @default(autoincrement())
+  descricao           String                @db.VarChar(100)
+  created_at          DateTime              @db.Timestamptz(6)
+  updated_at          DateTime?             @db.Timestamptz(6)
+  deleted_at          DateTime?             @db.Timestamptz(6)
+  nome                String                @db.VarChar(100)
+  organizacao_usuario organizacao_usuario[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model organizacao_usuario {
+  id             Int            @id(map: "app_core_userorganization_pkey") @default(autoincrement())
+  created_at     DateTime       @db.Timestamptz(6)
+  updated_at     DateTime?      @db.Timestamptz(6)
+  deleted_at     DateTime?      @db.Timestamptz(6)
+  organizacao_id Int
+  user_id        Int
+  app_core_log   app_core_log[]
+  auth_user      auth_user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_userorganization_user_id_9824d4d2_fk_auth_user_id")
+  organizacao    organizacao    @relation(fields: [organizacao_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "organizacao_usuario_organizacao_id_12aebd72_fk_organizacao_id")
+
+  @@index([organizacao_id], map: "app_core_userorganization_organization_id_aaa941c2")
+  @@index([user_id], map: "app_core_userorganization_user_id_9824d4d2")
+}
+
+model registro_consulta_app {
+  id            Int       @id(map: "app_core_queryapplog_pkey") @default(autoincrement())
+  cpf           String    @db.VarChar(100)
+  nb            String    @db.VarChar(100)
+  tipo_consulta String    @db.VarChar(100)
+  integracao    String    @db.VarChar(100)
+  nome_completo String    @db.VarChar(100)
+  email_usuario String    @db.VarChar(100)
+  ip_usuario    String    @db.VarChar(100)
+  created_at    DateTime  @db.Timestamptz(6)
+  updated_at    DateTime? @db.Timestamptz(6)
+  deleted_at    DateTime? @db.Timestamptz(6)
+}
+
+model relatorio {
+  id           Int       @id(map: "app_core_reports_pkey") @default(autoincrement())
+  nome_arquivo String    @db.VarChar(100)
+  progresso    Int
+  created_at   DateTime  @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+  finished_at  DateTime? @db.Timestamptz(6)
+  updated_at   DateTime? @db.Timestamptz(6)
+}
+
+model representante_legal {
+  id        Int         @id(map: "app_core_legalrepresentative_pkey") @default(autoincrement())
+  nome      String      @db.VarChar(100)
+  cpf       String      @db.VarChar(11)
+  beneficio beneficio[]
+}
+
+model servico_consulta {
+  id                     Int                      @id(map: "app_core_service_pkey") @default(autoincrement())
+  nome                   String                   @db.VarChar(100)
+  descricao              String                   @db.VarChar(100)
+  created_at             DateTime                 @db.Timestamptz(6)
+  updated_at             DateTime?                @db.Timestamptz(6)
+  deleted_at             DateTime?                @db.Timestamptz(6)
+  grupo_servico_consulta grupo_servico_consulta[]
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model tarefa {
+  id              Int             @id(map: "app_core_task_pkey") @default(autoincrement())
+  status_id       Int
+  cliente_id      Int
+  cliente         cliente         @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_task_cliente_id_c052c8d7_fk_app_core_client_id")
+  app_core_status app_core_status @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_task_status_id_2e2237b8_fk_app_core_status_id")
+
+  @@index([status_id], map: "app_core_task_status_id_id_97495f4e")
+  @@index([cliente_id], map: "app_core_task_user_id_id_ff361fd5")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model telefone {
+  id         Int       @id(map: "app_core_telephone_pkey") @default(autoincrement())
+  numero     String    @db.VarChar(100)
+  whatsapp   Boolean
+  created_at DateTime  @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  cliente_id Int
+  eh_celular Boolean
+  ranking    Int?
+  cliente    cliente   @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_telephone_cliente_id_061eb68c_fk_app_core_client_id")
+
+  @@index([cliente_id], map: "app_core_telephone_client_id_950f2448")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model transacao {
+  id                                             Int         @id(map: "app_core_transaction_pkey") @default(autoincrement())
+  tipo                                           String      @db.VarChar(100)
+  created_at                                     DateTime    @db.Timestamptz(6)
+  updated_at                                     DateTime?   @db.Timestamptz(6)
+  deleted_at                                     DateTime?   @db.Timestamptz(6)
+  usuario_id                                     Int
+  usuario_app                                    Int
+  usuario_app_transacao_usuario_appTousuario_app usuario_app @relation("transacao_usuario_appTousuario_app", fields: [usuario_app], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transacao_usuario_app_96dac4df_fk_usuario_app_id")
+  auth_user                                      auth_user   @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transacao_usuario_id_dc1b7bdf_fk_auth_user_id")
+
+  @@index([usuario_app], map: "app_core_transaction_user_app_id_62b16b4c")
+  @@index([usuario_id], map: "app_core_transaction_user_id_1faa0d2b")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model usuario_app {
+  id                                            Int         @id(map: "app_core_userapp_pkey") @default(autoincrement())
+  balance                                       Int
+  created_at                                    DateTime    @db.Timestamptz(6)
+  updated_at                                    DateTime?   @db.Timestamptz(6)
+  deleted_at                                    DateTime?   @db.Timestamptz(6)
+  expires_at                                    DateTime?   @db.Timestamptz(6)
+  app_id                                        Int
+  usuario_id                                    Int
+  alterado_por                                  Int?
+  transacao_transacao_usuario_appTousuario_app  transacao[] @relation("transacao_usuario_appTousuario_app")
+  app                                           app         @relation(fields: [app_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "app_core_userapp_app_id_ed5a93d0_fk_app_core_app_id")
+  auth_user_usuario_app_alterado_porToauth_user auth_user?  @relation("usuario_app_alterado_porToauth_user", fields: [alterado_por], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuario_app_alterado_por_4482df6e_fk_auth_user_id")
+  auth_user_usuario_app_usuario_idToauth_user   auth_user   @relation("usuario_app_usuario_idToauth_user", fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuario_app_usuario_id_ecc7c4f9_fk_auth_user_id")
+
+  @@index([app_id], map: "app_core_userapp_app_id_ed5a93d0")
+  @@index([alterado_por], map: "app_core_userapp_changed_by_id_00aa2140")
+  @@index([usuario_id], map: "app_core_userapp_user_id_50a0f4d3")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model usuario_licenca {
+  id          Int       @id(map: "app_core_userlicense_pkey") @default(autoincrement())
+  vence_em    DateTime? @db.Timestamptz(6)
+  licenca_id  Int
+  usuario_id  Int
+  created_at  DateTime  @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  updated_at  DateTime? @db.Timestamptz(6)
+  dias_extras Int
+  licenca     licenca   @relation(fields: [licenca_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuario_licenca_licenca_id_c4532d14_fk_licenca_id")
+  auth_user   auth_user @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuario_licenca_usuario_id_ae8bc8b7_fk_auth_user_id")
+
+  @@index([licenca_id], map: "app_core_userlicense_license_id_b3ebf370")
+  @@index([usuario_id], map: "app_core_userlicense_user_id_e37e112a")
+}
