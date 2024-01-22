@@ -19,5 +19,14 @@
         "titleBar.inactiveForeground": "#e7e7e799"
     },
     "peacock.color": "#813c26",
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true
+    },
+    "triggerTaskOnSave.tasks": {
+        "restart backend": [
+            "src/**/*"
+        ]
+    },
+    "typescript.tsdk": "node_modules/typescript/lib",
 }

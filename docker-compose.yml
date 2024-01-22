@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5433
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: webapp_dev
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  backend:
+      build: .
+      ports:
+        - 3000:3000
+        - 9229:9229 # for debugging
+      volumes:
+        - .:/usr/src/app
+        - /usr/src/app/node_modules
+      command: npm run start:docker
+      depends_on:
+        postgres:
+          condition: service_completed_successfully
+      environment:
+        DATABASE_URL: postgres://postgres:postgres@postgres:5433/webapp_dev
+        PORT: 3000
